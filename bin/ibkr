@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Launcher for the IBKR Kimi plugin Python tools.
+# This script resolves the repository root from its own location so it works
+# when installed under ~/.kimi-code/plugins/managed/ibkr-tools/.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SCRIPTS_DIR="$REPO_ROOT/ibkr-tools/scripts"
+
+usage() {
+    cat <<EOF
+Usage: ibkr <command> [args...]
+
+Available commands:
+  status            Check IB Gateway connection status
+  quote <symbol>    Fetch a real-time quote for <symbol>
+  search <symbol>   Look up contract details for <symbol>
+  positions         List current portfolio positions
+  account           Show account balances and buying power
+  orders            List open orders
+  order <args...>   Place an order
+  cancel-order      Cancel an order
+  history <args...> Download historical OHLCV+ bars
+  pnl               Show daily P&L summary
+  gap-scan          Run pre-market gap scan
+  market-movers     Show gainers/losers/most-active
+  analyze-technical Run pure-Python technical analysis
+  analyze-setup     Grade an ORB trade setup
+  analyze-finnhub   Enrich analysis with Finnhub data
+  briefing          Generate a pre-market briefing
+  help              Show this usage message
+
+Run "python3 $SCRIPTS_DIR/<script>.py --help" for script-specific options.
+EOF
+}
+
+if [[ $# -eq 0 ]]; then
+    usage
+    exit 1
+fi
+
+COMMAND="$1"
+shift
+
+case "$COMMAND" in
+    status)            SCRIPT="ibkr_status.py" ;;
+    quote)             SCRIPT="ibkr_quote.py" ;;
+    search)            SCRIPT="ibkr_search.py" ;;
+    positions)         SCRIPT="ibkr_positions.py" ;;
+    account)           SCRIPT="ibkr_account.py" ;;
+    orders)            SCRIPT="ibkr_orders.py" ;;
+    order)             SCRIPT="ibkr_order.py" ;;
+    cancel-order)      SCRIPT="ibkr_cancel_order.py" ;;
+    history)           SCRIPT="ibkr_history.py" ;;
+    pnl)               SCRIPT="ibkr_pnl.py" ;;
+    gap-scan)          SCRIPT="ibkr_gap_scan.py" ;;
+    market-movers)     SCRIPT="ibkr_market_movers.py" ;;
+    analyze-technical) SCRIPT="ibkr_analyze_technical.py" ;;
+    analyze-setup)     SCRIPT="ibkr_analyze_setup.py" ;;
+    analyze-finnhub)   SCRIPT="ibkr_analyze_finnhub.py" ;;
+    briefing)          SCRIPT="ibkr_briefing.py" ;;
+    help|--help|-h)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "Error: unknown command '$COMMAND'" >&2
+        echo "" >&2
+        usage >&2
+        exit 1
+        ;;
+esac
+
+exec python3 "$SCRIPTS_DIR/$SCRIPT" "$@"

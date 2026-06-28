@@ -1,19 +1,18 @@
 ---
 name: ibkr-trading
-description: Interactive Brokers trading workflows via local IB Gateway. Market data, order management, portfolio tracking, and risk controls using the ibkr-tools plugin.
-compatibility: Requires ibkr-tools Kimi plugin and locally running IB Gateway (https://localhost:4004)
+description: Interactive Brokers trading workflows via local IB Gateway. Use for quotes, positions, orders, scans, technical analysis, and risk-controlled trading.
 ---
 
 # IBKR Local Gateway Trading
 
-Trading workflows for Interactive Brokers via local IB Gateway using the `ibkr-tools` plugin.
+This skill controls Interactive Brokers (IBKR) trading workflows through the `ibkr` launcher. The launcher delegates to Python scripts that talk directly to a locally-running IB Gateway Client Portal API on `https://localhost:4004/v1/api`.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A[Kimi Code CLI] -->|Plugin Tools| B[ibkr-tools]
-    B -->|Python Scripts| C[IB Gateway localhost:4004]
+    A[Kimi Code CLI] -->|ibkr launcher| B[ibkr-tools scripts]
+    B -->|Python + HTTPS| C[IB Gateway localhost:4004]
     C -->|HTTPS REST| D[IBKR Servers]
 
     style A fill:#4CAF50,color:#fff
@@ -21,36 +20,67 @@ flowchart LR
     style C fill:#FF9800,color:#000
 ```
 
-## Pre-Flight Checklist
+## Launcher Invocation Rules
 
-Before any trading operation, run `ibkr-status` to verify:
+When the user asks for anything involving quotes, orders, positions, scans, or analysis, invoke the launcher commands.
+
+1. **First try:** `ibkr <command> [args...]`
+2. **If `ibkr` is not on PATH:** use the full path `~/.kimi-code/plugins/managed/ibkr-tools/bin/ibkr <command> [args...]`
+3. **If that path does not exist:** ask the user where the launcher is installed.
+
+Available launcher commands:
+
+| Command | Delegated script |
+|---------|------------------|
+| `status` | `ibkr_status.py` |
+| `quote` | `ibkr_quote.py` |
+| `search` | `ibkr_search.py` |
+| `positions` | `ibkr_positions.py` |
+| `account` | `ibkr_account.py` |
+| `orders` | `ibkr_orders.py` |
+| `order` | `ibkr_order.py` |
+| `cancel-order` | `ibkr_cancel_order.py` |
+| `history` | `ibkr_history.py` |
+| `pnl` | `ibkr_pnl.py` |
+| `gap-scan` | `ibkr_gap_scan.py` |
+| `market-movers` | `ibkr_market_movers.py` |
+| `analyze-technical` | `ibkr_analyze_technical.py` |
+| `analyze-setup` | `ibkr_analyze_setup.py` |
+| `analyze-finnhub` | `ibkr_analyze_finnhub.py` |
+| `briefing` | `ibkr_briefing.py` |
+
+## Pre-Flight Rule
+
+Before any trading operation, run `ibkr status` and confirm the gateway is connected. If `ibkr status` reports disconnected or errors, stop and tell the user to start IB Gateway and log in.
+
+Confirm the following when relevant:
 
 1. IB Gateway is running and logged in
 2. API connections are enabled (Settings > API > Enable)
-3. Port matches configuration (default: 4004, set via IB_GATEWAY_PORT env var)
+3. Port matches configuration (default: 4004, set via `IB_GATEWAY_PORT` env var)
 4. Session is authenticated
 5. Market data subscriptions are active
 
-## Tool Reference
+## Command Reference
 
-| Tool | Purpose | Example |
-|------|---------|---------|
-| `ibkr-status` | Check Gateway connection | `ibkr-status` |
-| `ibkr-quote` | Real-time quote | `ibkr-quote symbol=AAPL` |
-| `ibkr-search` | Contract lookup | `ibkr-search symbol=ES` |
-| `ibkr-positions` | Portfolio positions | `ibkr-positions` |
-| `ibkr-account` | Account balances | `ibkr-account` |
-| `ibkr-orders` | Open orders | `ibkr-orders` |
-| `ibkr-order` | Place order | `ibkr-order symbol=AAPL action=BUY qty=10 type=LMT price=150` |
-| `ibkr-cancel-order` | Cancel order | `ibkr-cancel-order order_id=123456` |
-| `ibkr-history` | Historical OHLCV+ data download | `ibkr-history AAPL --start-date 2026-01-01 --format csv --output aapl.csv` |
-| `ibkr-pnl` | P&L summary | `ibkr-pnl` |
-| `ibkr-gap-scan` | Pre-market gap scanner | `ibkr-gap-scan --min-gap 3 --direction up --universe nasdaq100` |
-| `ibkr-market-movers` | Gainers/losers/most active | `ibkr-market-movers --type gainers --count 10 --session pre_market` |
-| `ibkr-analyze-technical` | Technical analysis (RSI, SMA, ATR, MACD, BB) | `ibkr-analyze-technical AAPL --period 3m` |
-| `ibkr-analyze-setup` | ORB setup evaluator (grades A-F) | `ibkr-analyze-setup NVDA --direction long` |
-| `ibkr-analyze-finnhub` | News, earnings, sentiment, analysts | `ibkr-analyze-finnhub TSLA` |
-| `ibkr-briefing` | Full pre-market briefing | `ibkr-briefing --universe nasdaq100 --gap-min 3` |
+| Command | Purpose | Example invocation |
+|---------|---------|-------------------|
+| `ibkr status` | Check Gateway connection | `ibkr status` |
+| `ibkr quote` | Real-time quote | `ibkr quote AAPL` |
+| `ibkr search` | Contract lookup | `ibkr search ES` |
+| `ibkr positions` | Portfolio positions | `ibkr positions` |
+| `ibkr account` | Account balances / buying power | `ibkr account` |
+| `ibkr orders` | Open orders | `ibkr orders` |
+| `ibkr order` | Place an order | `ibkr order AAPL BUY 10 LMT 195.50` |
+| `ibkr cancel-order` | Cancel an order | `ibkr cancel-order 123456` |
+| `ibkr history` | Historical OHLCV+ data download | `ibkr history AAPL --start-date 2026-01-01 --format csv --output aapl.csv` |
+| `ibkr pnl` | P&L summary | `ibkr pnl` |
+| `ibkr gap-scan` | Pre-market gap scanner | `ibkr gap-scan --min-gap 3 --direction up --universe nasdaq100` |
+| `ibkr market-movers` | Gainers/losers/most active | `ibkr market-movers --type gainers --count 10 --session pre_market` |
+| `ibkr analyze-technical` | Technical analysis (RSI, SMA, ATR, MACD, BB) | `ibkr analyze-technical AAPL --period 3m` |
+| `ibkr analyze-setup` | ORB setup evaluator (grades A-F) | `ibkr analyze-setup NVDA --direction long` |
+| `ibkr analyze-finnhub` | News, earnings, sentiment, analysts | `ibkr analyze-finnhub TSLA` |
+| `ibkr briefing` | Full pre-market briefing | `ibkr briefing --universe nasdaq100 --gap-min 3` |
 
 ## Workflow Patterns
 
@@ -59,10 +89,10 @@ Before any trading operation, run `ibkr-status` to verify:
 ```mermaid
 sequenceDiagram
     participant K as Kimi
-    participant Q as ibkr-quote
+    participant Q as ibkr quote
     participant G as IB Gateway
 
-    K->>Q: ibkr-quote symbol=TSLA
+    K->>Q: ibkr quote TSLA
     Q->>G: GET /iserver/secdef/search?symbol=TSLA
     G-->>Q: conid: 76792991
     Q->>G: GET /iserver/marketdata/snapshot?conids=76792991
@@ -76,11 +106,11 @@ sequenceDiagram
 sequenceDiagram
     participant U as User
     participant K as Kimi
-    participant O as ibkr-order
+    participant O as ibkr order
     participant G as IB Gateway
 
     U->>K: "Buy 10 shares of AAPL at limit $195"
-    K->>O: ibkr-order AAPL BUY 10 LMT 195.00
+    K->>O: ibkr order AAPL BUY 10 LMT 195.00
     O->>G: POST /iserver/account/order/whatif
     G-->>O: Preview: margin impact, commission
     O->>G: POST /iserver/account/{acct}/orders
@@ -93,11 +123,11 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    A[Start] --> B[ibkr-positions]
+    A[Start] --> B[ibkr positions]
     B --> C{Position > 10% of NAV?}
     C -->|Yes| D[Flag Risk Warning]
     C -->|No| E[Acceptable]
-    E --> F[ibkr-account]
+    E --> F[ibkr account]
     F --> G{Buying Power > Order Value?}
     G -->|Yes| H[Proceed with Order]
     G -->|No| I[Reject - Insufficient Funds]
@@ -114,11 +144,11 @@ flowchart TD
 sequenceDiagram
     participant U as User
     participant K as Kimi
-    participant S as ibkr-gap-scan
+    participant S as ibkr gap-scan
     participant G as IB Gateway
 
     U->>K: "Scan for pre-market gappers > 3%"
-    K->>S: ibkr-gap-scan --min-gap 3 --direction both
+    K->>S: ibkr gap-scan --min-gap 3 --direction both
     S->>G: POST /iserver/scanner/run (MOST_ACTIVE)
     G-->>S: Top active stocks
     S->>S: Resolve conids for each symbol
@@ -149,19 +179,19 @@ sequenceDiagram
 
 | Strategy | Command |
 |----------|---------|
-| **Conservative gap-up** | `ibkr-gap-scan --min-gap 2 --max-gap 10 --direction up --min-price 10 --min-volume 500 --universe nasdaq100 --max-results 20` |
-| **Aggressive gap-up** | `ibkr-gap-scan --min-gap 5 --direction up --min-price 5 --min-volume 100 --universe most_active --max-results 50` |
-| **Gap-down reversal** | `ibkr-gap-scan --min-gap 3 --direction down --min-price 15 --min-volume 300 --sort-by volume` |
-| **Pre-market momentum** | `ibkr-gap-scan --min-gap 4 --direction both --min-price 10 --min-volume 1000 --universe most_active --detailed` |
+| **Conservative gap-up** | `ibkr gap-scan --min-gap 2 --max-gap 10 --direction up --min-price 10 --min-volume 500 --universe nasdaq100 --max-results 20` |
+| **Aggressive gap-up** | `ibkr gap-scan --min-gap 5 --direction up --min-price 5 --min-volume 100 --universe most_active --max-results 50` |
+| **Gap-down reversal** | `ibkr gap-scan --min-gap 3 --direction down --min-price 15 --min-volume 300 --sort-by volume` |
+| **Pre-market momentum** | `ibkr gap-scan --min-gap 4 --direction both --min-price 10 --min-volume 1000 --universe most_active --detailed` |
 
 ### Market Movers Workflow
 
 ```mermaid
 flowchart TD
     A[Start Session] --> B{Market Open?}
-    B -->|Pre-market| C[ibkr-market-movers --session pre_market]
-    B -->|Regular| D[ibkr-market-movers --session regular]
-    B -->|After-hours| E[ibkr-market-movers --session after_hours]
+    B -->|Pre-market| C[ibkr market-movers --session pre_market]
+    B -->|Regular| D[ibkr market-movers --session regular]
+    B -->|After-hours| E[ibkr market-movers --session after_hours]
 
     C --> F[Review Gainers + Losers]
     D --> F
@@ -183,11 +213,11 @@ flowchart TD
 
 | Scenario | Command |
 |----------|---------|
-| **Pre-market leaders** | `ibkr-market-movers --type gainers --count 15 --session pre_market --min-volume 100` |
-| **Regular hours top gainers** | `ibkr-market-movers --type gainers --count 20 --exchange nasdaq` |
-| **Short squeeze scan** | `ibkr-market-movers --type gainers --count 10 --min-volume 500 --detailed` |
-| **End-of-day washouts** | `ibkr-market-movers --type losers --count 10 --session after_hours` |
-| **Full market picture** | `ibkr-market-movers --type all --count 10 --detailed` |
+| **Pre-market leaders** | `ibkr market-movers --type gainers --count 15 --session pre_market --min-volume 100` |
+| **Regular hours top gainers** | `ibkr market-movers --type gainers --count 20 --exchange nasdaq` |
+| **Short squeeze scan** | `ibkr market-movers --type gainers --count 10 --min-volume 500 --detailed` |
+| **End-of-day washouts** | `ibkr market-movers --type losers --count 10 --session after_hours` |
+| **Full market picture** | `ibkr market-movers --type all --count 10 --detailed` |
 
 ## AI Analysis Workflows
 
@@ -197,11 +227,11 @@ flowchart TD
 sequenceDiagram
     participant U as User
     participant K as Kimi
-    participant T as ibkr-analyze-technical
+    participant T as ibkr analyze-technical
     participant G as IB Gateway
 
     U->>K: "Technical picture of AAPL"
-    K->>T: ibkr-analyze-technical symbol=AAPL period=3m
+    K->>T: ibkr analyze-technical AAPL --period 3m
     T->>G: Fetch 3 months daily bars
     G-->>T: OHLCV data
     T->>T: Calculate RSI(14), SMA(20/50/200), ATR(14)
@@ -225,11 +255,11 @@ sequenceDiagram
 sequenceDiagram
     participant U as User
     participant K as Kimi
-    participant S as ibkr-analyze-setup
+    participant S as ibkr analyze-setup
     participant G as IB Gateway
 
     U->>K: "Should I take NVDA ORB long?"
-    K->>S: ibkr-analyze-setup symbol=NVDA
+    K->>S: ibkr analyze-setup NVDA
     S->>G: Current quote + historical bars
     G-->>S: Price, gap%, volume, history
     S->>S: Score gap quality (0-100)
@@ -254,8 +284,8 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    A[User asks: "Why is TSLA moving?"] --> B[ibkr-analyze-technical]
-    A --> C[ibkr-analyze-finnhub]
+    A[User asks: "Why is TSLA moving?"] --> B[ibkr analyze-technical]
+    A --> C[ibkr analyze-finnhub]
     A --> D[Kimi web search]
 
     B -->|Price action context| E[Kimi Synthesis]
@@ -269,8 +299,8 @@ flowchart TD
 ```
 
 **How Kimi should use the data:**
-1. Run `ibkr-analyze-technical` — get gap%, volume, trend context
-2. Run `ibkr-analyze-finnhub` — get news headlines with sentiment, earnings proximity
+1. Run `ibkr analyze-technical` — get gap%, volume, trend context
+2. Run `ibkr analyze-finnhub` — get news headlines with sentiment, earnings proximity
 3. Use Kimi's built-in web search for broader context
 4. Synthesize: "TSLA gapping +3.5% on delivery beat (Reuters positive). RSI 54, not overbought. Above all SMAs. Next earnings in 24 days. Bullish catalyst with technical alignment."
 
@@ -278,7 +308,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    A[ibkr-briefing] --> B[Gap Distribution]
+    A[ibkr briefing] --> B[Gap Distribution]
     A --> C[Top Gappers]
     A --> D[Top Gainers/Losers]
     A --> E[Setup Ideas with Grades]
@@ -322,11 +352,11 @@ export FINNHUB_API_KEY=your_key_here
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant H as ibkr-history
+    participant H as ibkr history
     participant G as IB Gateway
     participant F as CSV File
 
-    U->>H: ibkr-history AAPL --start-date 2024-01-01 --end-date 2026-06-28 --bar-size 1d --format csv --output aapl_30m.csv
+    U->>H: ibkr history AAPL --start-date 2024-01-01 --end-date 2026-06-28 --bar-size 1d --format csv --output aapl_30m.csv
     H->>G: Request bars in chunks
     G-->>H: OHLCV+ data (auto-chunked for large ranges)
     H->>H: Compute range, body, change, change_pct
@@ -359,23 +389,22 @@ sequenceDiagram
 | Profit target | LMT GTC | Set and forget |
 | Loss protection | STP | Automated stop |
 
-### Paper Trading Requirement
+## Paper Trading Requirement
 
-All new strategies and tools MUST be validated in paper trading mode first:
+All new strategies and launcher commands MUST be validated in paper trading mode first:
 
 ```bash
-# Set in environment or plugin config
 export IB_PAPER_TRADING=true
 ```
 
-The `ibkr-order` tool enforces preview-before-submit and displays PAPER/LIVE mode in every response.
+`ibkr order` enforces preview-before-submit and displays PAPER/LIVE mode in every response. Live trading requires explicitly setting `IB_PAPER_TRADING=false` and confirming with the user.
 
 ## IB Gateway Configuration
 
 ### Required Settings
 
 1. **Enable API**: Edit > Settings > API > Enable "ActiveX and Socket Clients"
-2. **Port**: Note the socket port (default 4001 for Gateway, 7496/7497 for TWS)
+2. **Port**: Note the socket port (default 4001 for Gateway, 7496/7497 for TWS). The Client Portal API endpoint used by the scripts is `https://localhost:4004/v1/api` by default.
 3. **Localhost Only**: Ensure "Allow connections from localhost only" is checked
 4. **Master API Client ID**: Leave as 0 unless using multiple clients
 
@@ -383,9 +412,9 @@ The `ibkr-order` tool enforces preview-before-submit and displays PAPER/LIVE mod
 
 - IB Gateway auto-logs out after ~6 minutes of inactivity
 - Keep Gateway window active or use auto-restart scripts
-- The plugin tools will return clear DISCONNECTED status if session expired
+- The launcher commands will return clear DISCONNECTED status if the session expired
 
-### Environment Variables
+## Environment Variables
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
@@ -400,29 +429,19 @@ The `ibkr-order` tool enforces preview-before-submit and displays PAPER/LIVE mod
 | "Connection failed" | Gateway not running | Start IB Gateway, log in |
 | "HTTP 401/403" | Session expired | Re-authenticate in Gateway |
 | "No market data" | Missing subscription | Check Market Data Subscriptions in Account Management |
-| "Contract not found" | Wrong symbol | Use `ibkr-search` to verify |
-| "Order rejected" | Insufficient buying power | Check `ibkr-account` for available funds |
+| "Contract not found" | Wrong symbol | Use `ibkr search` to verify |
+| "Order rejected" | Insufficient buying power | Check `ibkr account` for available funds |
 | "Preview failed" | Invalid parameters | Check conid, order type, price format |
 | Empty positions list | No holdings | Normal if portfolio is flat |
 
 ## Best Practices
 
-1. **Always check status first**: Run `ibkr-status` at session start
-2. **Quote before ordering**: Get current market price with `ibkr-quote` before placing orders
-3. **Verify fills**: After placing an order, check `ibkr-orders` to confirm status
-4. **Monitor P&L**: Run `ibkr-pnl` at end of session for performance tracking
+1. **Always check status first**: Run `ibkr status` at session start
+2. **Quote before ordering**: Get current market price with `ibkr quote` before placing orders
+3. **Verify fills**: After placing an order, check `ibkr orders` to confirm status
+4. **Monitor P&L**: Run `ibkr pnl` at end of session for performance tracking
 5. **Use limit orders**: Prefer LMT over MKT to control slippage
-6. **Log everything**: The plugin outputs structured JSON — redirect to files for audit trail
-
-## Extending the Plugin
-
-To add new capabilities:
-
-1. Create a new Python script in `scripts/` following the `ibkr_core.py` pattern
-2. Add the tool definition to `kimi.plugin.json`
-3. Follow the request/response format: `{"status": "OK", ...}` or `{"status": "ERROR", ...}`
-4. Always validate Gateway connection before API calls
-5. Handle SSL context for localhost (self-signed cert)
+6. **Log everything**: The launcher outputs structured JSON — redirect to files for audit trail
 
 ## Direct API Testing (Outside Kimi)
 

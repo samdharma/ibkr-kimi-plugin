@@ -1,0 +1,13 @@
+{
+  "name": "ibkr-tools",
+  "version": "1.2.0",
+  "description": "Interactive Brokers trading workflows via local IB Gateway",
+  "skills": "./skills",
+  "sessionStart": {
+    "skill": "ibkr-trading"
+  },
+  "interface": {
+    "displayName": "IBKR Local Gateway Tools",
+    "shortDescription": "Connect to IBKR through your local IB Gateway for quotes, positions, orders, and account data."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "ibkr-tools-dev",
+  "description": "Development marketplace for IBKR Local Gateway Tools",
+  "owner": {
+    "name": "ibkr-kimi-plugin contributors"
+  },
+  "plugins": [
+    {
+      "name": "ibkr-tools",
+      "version": "1.2.0",
+      "description": "Interactive Brokers trading workflows via local IB Gateway",
+      "source": "./",
+      "author": {
+        "name": "ibkr-kimi-plugin contributors"
+      }
+    }
+  ]
+}

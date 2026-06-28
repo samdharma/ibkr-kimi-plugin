@@ -1,0 +1,15 @@
+{
+  "name": "ibkr-tools",
+  "version": "1.2.0",
+  "description": "Interactive Brokers trading workflows via local IB Gateway",
+  "author": "ibkr-kimi-plugin contributors",
+  "homepage": "https://github.com/<owner>/ibkr-kimi-plugin",
+  "repository": "https://github.com/<owner>/ibkr-kimi-plugin",
+  "license": "MIT",
+  "keywords": [
+    "ibkr",
+    "interactive-brokers",
+    "trading",
+    "skills"
+  ]
+}
