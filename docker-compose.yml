@@ -4,4 +4,6 @@ services:
     container_name: ibkr-cp-gateway
     ports:
       - "127.0.0.1:${IBCP_GATEWAY_PORT:-5000}:5000"
+    volumes:
+      - ./cp-gateway/conf.yaml:/opt/cp-gateway/clientportal.gw/root/conf.yaml:ro
     restart: unless-stopped

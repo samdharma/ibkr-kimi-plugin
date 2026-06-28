@@ -1,11 +1,11 @@
 ---
 name: ibkr-trading
-description: Interactive Brokers trading workflows via local IB Gateway. Use for quotes, positions, orders, scans, technical analysis, and risk-controlled trading.
+description: Interactive Brokers trading workflows via the local Client Portal API Gateway. Use for quotes, positions, orders, scans, technical analysis, and risk-controlled trading.
 ---
 
-# IBKR Local Gateway Trading
+# IBKR Client Portal API Gateway Trading
 
-This skill controls Interactive Brokers (IBKR) trading workflows through the `ibkr` launcher. The launcher delegates to Python scripts that talk directly to a locally-running Client Portal API Gateway on `https://localhost:5000/v1/api` (override with `IBCP_GATEWAY_HOST`/`IBCP_GATEWAY_PORT`).
+This skill controls Interactive Brokers (IBKR) trading workflows through the `ibkr` launcher. The launcher delegates to Python scripts that talk directly to a locally-running Client Portal API Gateway on `https://localhost:5000/v1/api` (override with `IBCP_GATEWAY_HOST`/`IBCP_GATEWAY_PORT`). This is the REST-based Client Portal API, not the IB Gateway/TWS socket API.
 
 ## Architecture
 
@@ -57,7 +57,7 @@ Confirm the following when relevant:
 
 1. IB Gateway is running and logged in
 2. API connections are enabled (Settings > API > Enable)
-3. Port matches configuration (default: 5000, set via `IBCP_GATEWAY_PORT` env var)
+3. Port matches configuration (default: 5000, set via `IBCP_GATEWAY_PORT` env var; use the same port in `docker compose up` if not 5000)
 4. Session is authenticated
 5. Market data subscriptions are active
 
@@ -394,12 +394,12 @@ sequenceDiagram
 All new strategies and launcher commands MUST be validated in paper trading mode first:
 
 ```bash
-export IBCP_PAPER_TRADING=paper
+export IBCP_PAPER_TRADING=true
 ```
 
 `ibkr order` enforces preview-before-submit and displays PAPER/LIVE mode in every response. Live trading requires explicitly setting `IBCP_PAPER_TRADING=live` and confirming with the user.
 
-## IB Gateway Configuration
+## Client Portal API Gateway Configuration
 
 ### Required Settings
 
@@ -419,8 +419,9 @@ export IBCP_PAPER_TRADING=paper
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `IBCP_GATEWAY_HOST` | `localhost` | Client Portal API Gateway hostname |
-| `IBCP_GATEWAY_PORT` | `5000` | Client Portal API Gateway port |
-| `IBCP_PAPER_TRADING` | `paper` | `paper` for paper trading, `live` for live |
+| `IBCP_GATEWAY_PORT` | `5000` | Client Portal API Gateway port (also set when running `docker compose up`) |
+| `IBCP_PAPER_TRADING` | `true` | `true` for paper trading, `live` for live |
+| `FINNHUB_API_KEY` | none | Optional: news / earnings / sentiment enrichment |
 
 ## Troubleshooting
 
