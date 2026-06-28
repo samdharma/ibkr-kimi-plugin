@@ -1,0 +1,357 @@
+{
+  "name": "ibkr-tools",
+  "version": "1.2.0",
+  "description": "Interactive Brokers trading tools via local IB Gateway. Market data, portfolio, order management, gap scanning, market movers, technical analysis, and AI-powered setup evaluation.",
+  "interface": {
+    "displayName": "IBKR Local Gateway Tools",
+    "shortDescription": "Connect to IBKR through your local IB Gateway for quotes, positions, orders, and account data."
+  },
+  "skills": "../ibkr-trading",
+  "sessionStart": {
+    "skill": "ibkr-trading"
+  },
+  "mcpServers": {},
+  "tools": [
+    {
+      "name": "ibkr-status",
+      "description": "Check if IB Gateway is running and authenticated. Returns connection status, account list, and session info.",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_status.py"]
+    },
+    {
+      "name": "ibkr-quote",
+      "description": "Get real-time quote for a stock symbol (bid, ask, last, volume, change). Usage: ibkr-quote symbol=AAPL",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_quote.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Stock ticker symbol, e.g. AAPL, TSLA, NVDA"
+          }
+        },
+        "required": ["symbol"]
+      }
+    },
+    {
+      "name": "ibkr-search",
+      "description": "Search for a contract by symbol to get conid and contract details. Usage: ibkr-search symbol=SPY",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_search.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Symbol to search, e.g. AAPL, ES, CL"
+          }
+        },
+        "required": ["symbol"]
+      }
+    },
+    {
+      "name": "ibkr-positions",
+      "description": "List all current portfolio positions with quantity, average cost, market price, unrealized P&L.",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_positions.py"]
+    },
+    {
+      "name": "ibkr-account",
+      "description": "Get account summary: net liquidation value, buying power, cash balances, available funds.",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_account.py"]
+    },
+    {
+      "name": "ibkr-orders",
+      "description": "List all open/live orders with status, price, quantity, and order ID.",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_orders.py"]
+    },
+    {
+      "name": "ibkr-order",
+      "description": "Place a stock order. PAPER TRADING ONLY unless explicitly configured. Usage: ibkr-order symbol=AAPL action=BUY quantity=10 type=LMT price=150.00",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_order.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Stock symbol to trade"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["BUY", "SELL"],
+            "description": "Order side"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Number of shares"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["MKT", "LMT", "STP"],
+            "description": "Order type: MKT=market, LMT=limit, STP=stop"
+          },
+          "price": {
+            "type": "number",
+            "description": "Limit price (required for LMT and STP orders)"
+          }
+        },
+        "required": ["symbol", "action", "quantity", "type"]
+      }
+    },
+    {
+      "name": "ibkr-history",
+      "description": "Download historical OHLCV+ bar data with date range and CSV export. Defaults to last 3 months. Usage: ibkr-history AAPL --start-date 2026-01-01 --end-date 2026-06-28 --bar-size 1d --format csv --output aapl.csv",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_history.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Stock symbol"
+          },
+          "start-date": {
+            "type": "string",
+            "description": "Start date YYYY-MM-DD (default: 3 months ago)"
+          },
+          "end-date": {
+            "type": "string",
+            "description": "End date YYYY-MM-DD (default: today)"
+          },
+          "bar-size": {
+            "type": "string",
+            "enum": ["1min", "5min", "15min", "1h", "1d"],
+            "description": "Bar size (default: 1d)"
+          },
+          "format": {
+            "type": "string",
+            "enum": ["json", "csv"],
+            "description": "Output format (default: json)"
+          },
+          "output": {
+            "type": "string",
+            "description": "Output file path (default: stdout)"
+          }
+        },
+        "required": ["symbol"]
+      }
+    },
+    {
+      "name": "ibkr-pnl",
+      "description": "Get daily P&L summary including realized and unrealized P&L.",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_pnl.py"]
+    },
+    {
+      "name": "ibkr-gap-scan",
+      "description": "Pre-market gap-up/down scanner with configurable filters. Usage: ibkr-gap-scan --min-gap 3 --direction up --min-price 10 --universe nasdaq100",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_gap_scan.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "min-gap": {
+            "type": "number",
+            "description": "Minimum gap % to include (default: 2.0)"
+          },
+          "max-gap": {
+            "type": "number",
+            "description": "Maximum gap % to include (default: 50.0)"
+          },
+          "direction": {
+            "type": "string",
+            "enum": ["up", "down", "both"],
+            "description": "Gap direction: up, down, or both"
+          },
+          "min-price": {
+            "type": "number",
+            "description": "Minimum stock price (default: 5.0)"
+          },
+          "max-price": {
+            "type": "number",
+            "description": "Maximum stock price (default: 500.0)"
+          },
+          "min-volume": {
+            "type": "integer",
+            "description": "Minimum daily volume in thousands (default: 100)"
+          },
+          "universe": {
+            "type": "string",
+            "enum": ["all", "nasdaq100", "sp500", "most_active"],
+            "description": "Stock universe to scan"
+          },
+          "max-results": {
+            "type": "integer",
+            "description": "Maximum results to return (default: 50)"
+          },
+          "sort-by": {
+            "type": "string",
+            "enum": ["gap", "volume", "price"],
+            "description": "Sort field (default: gap)"
+          },
+          "detailed": {
+            "type": "boolean",
+            "description": "Include detailed quote fields"
+          }
+        }
+      }
+    },
+    {
+      "name": "ibkr-market-movers",
+      "description": "Real-time market gainers, losers, and most active stocks. Usage: ibkr-market-movers --type gainers --count 10 --session pre_market",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_market_movers.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["gainers", "losers", "most_active", "all"],
+            "description": "Mover type: gainers, losers, most_active, all"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of results per category (default: 20)"
+          },
+          "min-price": {
+            "type": "number",
+            "description": "Minimum stock price (default: 5.0)"
+          },
+          "max-price": {
+            "type": "number",
+            "description": "Maximum stock price (default: 1000.0)"
+          },
+          "min-volume": {
+            "type": "integer",
+            "description": "Minimum daily volume in thousands (default: 50)"
+          },
+          "session": {
+            "type": "string",
+            "enum": ["pre_market", "regular", "after_hours", "all_day"],
+            "description": "Market session context"
+          },
+          "exchange": {
+            "type": "string",
+            "enum": ["nyse", "nasdaq", "all"],
+            "description": "Exchange filter"
+          },
+          "detailed": {
+            "type": "boolean",
+            "description": "Include full quote details"
+          }
+        }
+      }
+    },
+    {
+      "name": "ibkr-analyze-technical",
+      "description": "Full technical analysis: RSI, SMA, ATR, Bollinger Bands, MACD, support/resistance, momentum score (0-100). Usage: ibkr-analyze-technical AAPL --period 3m",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_analyze_technical.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Stock symbol to analyze"
+          },
+          "period": {
+            "type": "string",
+            "enum": ["1m", "3m", "6m", "1y"],
+            "description": "Lookback period (default: 3m)"
+          },
+          "bar-size": {
+            "type": "string",
+            "enum": ["1d", "1h"],
+            "description": "Bar size (default: 1d)"
+          },
+          "detailed": {
+            "type": "boolean",
+            "description": "Include raw bar data"
+          }
+        },
+        "required": ["symbol"]
+      }
+    },
+    {
+      "name": "ibkr-analyze-setup",
+      "description": "ORB trade setup evaluator with A-F grading. Scores gap quality, volume, technical alignment, risk/reward. Returns TAKE/WATCH/PASS/CAUTION. Usage: ibkr-analyze-setup NVDA",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_analyze_setup.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Stock symbol to evaluate"
+          },
+          "direction": {
+            "type": "string",
+            "enum": ["long", "short"],
+            "description": "Trade direction (auto-detected if not specified)"
+          },
+          "entry": {
+            "type": "number",
+            "description": "Planned entry price"
+          },
+          "stop": {
+            "type": "number",
+            "description": "Planned stop price"
+          },
+          "target": {
+            "type": "number",
+            "description": "Planned target price"
+          }
+        },
+        "required": ["symbol"]
+      }
+    },
+    {
+      "name": "ibkr-analyze-finnhub",
+      "description": "News, earnings, sentiment, and analyst data via Finnhub. Requires FINNHUB_API_KEY env var. Degrades gracefully without it. Usage: ibkr-analyze-finnhub TSLA",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_analyze_finnhub.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Stock symbol"
+          },
+          "news-count": {
+            "type": "integer",
+            "description": "Number of news items (default: 10)"
+          }
+        },
+        "required": ["symbol"]
+      }
+    },
+    {
+      "name": "ibkr-briefing",
+      "description": "Full pre-market briefing: top gappers, movers, setup ideas with grades, and key takeaways. Usage: ibkr-briefing --universe nasdaq100 --gap-min 3",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_briefing.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "universe": {
+            "type": "string",
+            "enum": ["nasdaq100", "most_active"],
+            "description": "Stock universe (default: most_active)"
+          },
+          "gap-min": {
+            "type": "number",
+            "description": "Minimum gap % (default: 2.0)"
+          },
+          "max-setups": {
+            "type": "integer",
+            "description": "Max setup ideas (default: 5)"
+          }
+        }
+      }
+    },
+    {
+      "name": "ibkr-cancel-order",
+      "description": "Cancel an open order by order ID. Usage: ibkr-cancel-order order_id=123456789",
+      "command": ["python3", "{plugin_dir}/scripts/ibkr_cancel_order.py"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "description": "Order ID to cancel"
+          }
+        },
+        "required": ["order_id"]
+      }
+    }
+  ]
+}
