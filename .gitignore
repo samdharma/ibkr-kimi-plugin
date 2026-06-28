@@ -31,3 +31,6 @@ ENV/
 *.env
 .env.*
 secrets*
+
+# Agent instructions - keep local only
+AGENTS.md
