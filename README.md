@@ -27,6 +27,9 @@ ibkr-kimi-plugin/
 │   └── marketplace.json               # Claude marketplace metadata
 ├── bin/
 │   └── ibkr                           # Launcher script for all commands
+├── cp-gateway/
+│   └── Dockerfile                     # Dockerfile for Client Portal API Gateway
+├── docker-compose.yml                 # Run the Client Portal API Gateway in Docker
 ├── skills/
 │   └── ibkr-trading/
 │       └── SKILL.md                   # Trading skill: workflows, risk rules, prompts
@@ -57,7 +60,7 @@ ibkr-kimi-plugin/
 ## Prerequisites
 
 - [ ] Interactive Brokers account (paper or live)
-- [ ] IB Gateway installed, running, and authenticated locally
+- [ ] Client Portal API Gateway running locally (use the included Docker Compose setup, or run it manually)
 - [ ] Python 3.8+
 - [ ] [Kimi Code CLI](https://www.kimi.com/code) or [Claude Code](https://claude.ai/code)
 - [ ] Market data subscriptions active (for real-time quotes and scans)
@@ -105,6 +108,39 @@ Or symlink it into `~/.local/bin`:
 ```bash
 mkdir -p ~/.local/bin
 ln -s /path/to/ibkr-kimi-plugin/bin/ibkr ~/.local/bin/ibkr
+```
+
+## Client Portal API Gateway
+
+This plugin talks to IBKR through the **Client Portal API Gateway**, a small Java application that runs on your local machine. It is **not** the same as IB Gateway or TWS, which expose the socket API. If you already have an IB Gateway or TWS Docker container running for other tools, leave it running — this gateway is separate.
+
+### Quick start with Docker Compose
+
+A `docker-compose.yml` and `cp-gateway/Dockerfile` are included. To build and run the gateway:
+
+```bash
+docker compose up -d --build
+```
+
+The gateway listens on `https://localhost:5000` by default. To use a different host port, set `IBCP_GATEWAY_PORT` first:
+
+```bash
+export IBCP_GATEWAY_PORT=5001
+docker compose up -d --build
+```
+
+Then open `https://localhost:5000` (or your chosen port) in a browser, log in with your IBKR credentials, and complete 2FA.
+
+### Stop the gateway
+
+```bash
+docker compose down
+```
+
+### Verify it is running
+
+```bash
+curl -k https://localhost:5000/v1/api/iserver/auth/status
 ```
 
 ## Configuration
