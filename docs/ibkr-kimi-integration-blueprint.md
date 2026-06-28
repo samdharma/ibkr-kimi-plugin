@@ -256,7 +256,7 @@ The most feature-complete community server (186 GitHub stars).
       "command": "npx",
       "args": ["-y", "interactive-brokers-mcp"],
       "env": {
-        "IB_PAPER_TRADING": "true"
+        "IBCP_PAPER_TRADING": "paper"
       }
     }
   }
@@ -275,7 +275,7 @@ The most feature-complete community server (186 GitHub stars).
         "IB_HEADLESS_MODE": "true",
         "IB_USERNAME": "your_ib_username",
         "IB_PASSWORD_AUTH": "your_ib_password",
-        "IB_PAPER_TRADING": "true",
+        "IBCP_PAPER_TRADING": "paper",
         "IB_READ_ONLY_MODE": "true"
       }
     }
@@ -476,7 +476,7 @@ kimi mcp add --transport stdio ibkr npx -y interactive-brokers-mcp
 
 # --- Add with paper trading ---
 kimi mcp add --transport stdio ibkr-paper \
-  --env IB_PAPER_TRADING=true \
+  --env IBCP_PAPER_TRADING=paper \
   --env IB_HEADLESS_MODE=true \
   --env IB_USERNAME=$IB_USER \
   --env IB_PASSWORD_AUTH=$IB_PASS \
@@ -523,7 +523,7 @@ kimi --mcp-config-file ./ibkr-mcp.json
       "command": "npx",
       "args": ["-y", "interactive-brokers-mcp"],
       "env": {
-        "IB_PAPER_TRADING": "true",
+        "IBCP_PAPER_TRADING": "paper",
         "IB_HEADLESS_MODE": "true",
         "IB_USERNAME": "",
         "IB_PASSWORD_AUTH": "",
@@ -543,7 +543,7 @@ kimi --mcp-config-file ./ibkr-mcp.json
       "command": "npx",
       "args": ["-y", "interactive-brokers-mcp"],
       "env": {
-        "IB_PAPER_TRADING": "true",
+        "IBCP_PAPER_TRADING": "paper",
         "IB_HEADLESS_MODE": "true",
         "IB_USERNAME": "",
         "IB_PASSWORD_AUTH": "",
@@ -562,7 +562,7 @@ kimi --mcp-config-file ./ibkr-mcp.json
       "command": "npx",
       "args": ["-y", "interactive-brokers-mcp"],
       "env": {
-        "IB_PAPER_TRADING": "true",
+        "IBCP_PAPER_TRADING": "paper",
         "IB_HEADLESS_MODE": "true",
         "IB_USERNAME": "your_username",
         "IB_PASSWORD_AUTH": "your_password",
@@ -631,7 +631,7 @@ kimi-ibkr-plugin/
       "command": "npx",
       "args": ["-y", "interactive-brokers-mcp"],
       "env": {
-        "IB_PAPER_TRADING": "true"
+        "IBCP_PAPER_TRADING": "paper"
       }
     }
   }
@@ -788,7 +788,7 @@ compatibility: Requires Kimi Code CLI with MCP support and IBKR MCP server confi
 
 ### Pre-Trade Checklist
 1. Verify connection to IBKR MCP: `kimi mcp list`
-2. Confirm paper trading mode is active (env: `IB_PAPER_TRADING=true`)
+2. Confirm paper trading mode is active (env: `IBCP_PAPER_TRADING=paper`)
 3. Check account balance and buying power
 4. Verify market data subscriptions are active
 5. Review position sizing against risk limits
@@ -893,7 +893,7 @@ flowchart TB
 |-------|----------|----------------|
 | **Credentials** | Never hardcode | Use env vars or Kimi credential injection |
 | **Network** | Localhost only | Bind to 127.0.0.1, never expose publicly |
-| **Trading** | Paper first | `IB_PAPER_TRADING=true` |
+| **Trading** | Paper first | `IBCP_PAPER_TRADING=paper` |
 | **Orders** | Read-only by default | `IB_READ_ONLY_MODE=true` |
 | **2FA** | Always enabled | Mobile app or hardware key |
 | **Audit** | Log everything | Enable Flex Query audit trail |
@@ -933,7 +933,7 @@ flowchart LR
 | `IB_USERNAME` | IBKR account username | - | Headless mode |
 | `IB_PASSWORD_AUTH` | IBKR account password | - | Headless mode |
 | `IB_HEADLESS_MODE` | Skip browser auth | `false` | Optional |
-| `IB_PAPER_TRADING` | Use paper account | `false` | **Recommended** |
+| `IBCP_PAPER_TRADING` | Trading mode | `live` | **Recommended: `paper`** |
 | `IB_READ_ONLY_MODE` | Disable order placement | `false` | For analysis only |
 | `IB_FLEX_TOKEN` | Flex Web Service token | - | For Flex Queries |
 | `IB_AUTH_TIMEOUT` | Auth timeout (ms) | `120000` | Optional |
@@ -1030,7 +1030,7 @@ cat > ~/.config/kimi/ibkr-paper.json << 'EOF'
       "command": "npx",
       "args": ["-y", "interactive-brokers-mcp"],
       "env": {
-        "IB_PAPER_TRADING": "true"
+        "IBCP_PAPER_TRADING": "paper"
       }
     }
   }

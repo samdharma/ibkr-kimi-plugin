@@ -11,7 +11,7 @@ Arguments:
     PRICE   - Required for LMT and STP orders
 
 Safety:
-    - Requires IB_PAPER_TRADING=false env var for live orders
+    - Set IBCP_PAPER_TRADING=live for live orders (default: paper)
     - Always validates symbol exists before placing
     - Returns order preview for confirmation when possible
 """
@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from ibkr_core import (
     get_conid, api_post, print_json, print_error,
-    check_gateway, IB_PAPER_TRADING, BASE_URL
+    check_gateway, IBCP_PAPER_TRADING, BASE_URL
 )
 
 
@@ -110,7 +110,7 @@ def main():
         sys.exit(1)
 
     # Safety: check paper trading
-    mode = "PAPER" if IB_PAPER_TRADING else "LIVE"
+    mode = "PAPER" if IBCP_PAPER_TRADING else "LIVE"
 
     # Preview order first
     preview = preview_order(symbol, conid, action, qty, order_type, price)

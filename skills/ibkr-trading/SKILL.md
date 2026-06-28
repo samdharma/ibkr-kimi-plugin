@@ -5,14 +5,14 @@ description: Interactive Brokers trading workflows via local IB Gateway. Use for
 
 # IBKR Local Gateway Trading
 
-This skill controls Interactive Brokers (IBKR) trading workflows through the `ibkr` launcher. The launcher delegates to Python scripts that talk directly to a locally-running IB Gateway Client Portal API on `https://localhost:4004/v1/api`.
+This skill controls Interactive Brokers (IBKR) trading workflows through the `ibkr` launcher. The launcher delegates to Python scripts that talk directly to a locally-running Client Portal API Gateway on `https://localhost:5000/v1/api` (override with `IBCP_GATEWAY_HOST`/`IBCP_GATEWAY_PORT`).
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     A[Kimi Code CLI] -->|ibkr launcher| B[ibkr-tools scripts]
-    B -->|Python + HTTPS| C[IB Gateway localhost:4004]
+    B -->|Python + HTTPS| C[CP Gateway localhost:5000]
     C -->|HTTPS REST| D[IBKR Servers]
 
     style A fill:#4CAF50,color:#fff
@@ -57,7 +57,7 @@ Confirm the following when relevant:
 
 1. IB Gateway is running and logged in
 2. API connections are enabled (Settings > API > Enable)
-3. Port matches configuration (default: 4004, set via `IB_GATEWAY_PORT` env var)
+3. Port matches configuration (default: 5000, set via `IBCP_GATEWAY_PORT` env var)
 4. Session is authenticated
 5. Market data subscriptions are active
 
@@ -394,17 +394,17 @@ sequenceDiagram
 All new strategies and launcher commands MUST be validated in paper trading mode first:
 
 ```bash
-export IB_PAPER_TRADING=true
+export IBCP_PAPER_TRADING=paper
 ```
 
-`ibkr order` enforces preview-before-submit and displays PAPER/LIVE mode in every response. Live trading requires explicitly setting `IB_PAPER_TRADING=false` and confirming with the user.
+`ibkr order` enforces preview-before-submit and displays PAPER/LIVE mode in every response. Live trading requires explicitly setting `IBCP_PAPER_TRADING=live` and confirming with the user.
 
 ## IB Gateway Configuration
 
 ### Required Settings
 
 1. **Enable API**: Edit > Settings > API > Enable "ActiveX and Socket Clients"
-2. **Port**: Note the socket port (default 4001 for Gateway, 7496/7497 for TWS). The Client Portal API endpoint used by the scripts is `https://localhost:4004/v1/api` by default.
+2. **Port**: The Client Portal API Gateway endpoint used by the scripts is `https://localhost:5000/v1/api` by default (override with `IBCP_GATEWAY_PORT`).
 3. **Localhost Only**: Ensure "Allow connections from localhost only" is checked
 4. **Master API Client ID**: Leave as 0 unless using multiple clients
 
@@ -418,9 +418,9 @@ export IB_PAPER_TRADING=true
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `IB_GATEWAY_HOST` | `localhost` | Gateway hostname |
-| `IB_GATEWAY_PORT` | `4004` | Client Portal API port (your IB Gateway port) |
-| `IB_PAPER_TRADING` | `true` | Force paper trading mode |
+| `IBCP_GATEWAY_HOST` | `localhost` | Client Portal API Gateway hostname |
+| `IBCP_GATEWAY_PORT` | `5000` | Client Portal API Gateway port |
+| `IBCP_PAPER_TRADING` | `paper` | `paper` for paper trading, `live` for live |
 
 ## Troubleshooting
 
@@ -447,11 +447,11 @@ export IB_PAPER_TRADING=true
 
 ```bash
 # Test Gateway connectivity
-curl -k https://localhost:4004/v1/api/sso/validate
+curl -k https://localhost:5000/v1/api/sso/validate
 
 # Get account list
-curl -k https://localhost:4004/v1/api/iserver/accounts
+curl -k https://localhost:5000/v1/api/iserver/accounts
 
 # Search for AAPL
-curl -k 'https://localhost:4004/v1/api/iserver/secdef/search?symbol=AAPL&secType=STK'
+curl -k 'https://localhost:5000/v1/api/iserver/secdef/search?symbol=AAPL&secType=STK'
 ```

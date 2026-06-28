@@ -9,7 +9,7 @@ import os
 # Allow importing ibkr_core from the same directory
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from ibkr_core import check_gateway, get_accounts, print_json, BASE_URL, IB_PAPER_TRADING
+from ibkr_core import check_gateway, get_accounts, print_json, BASE_URL, IBCP_PAPER_TRADING
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
 
     # Get accounts if connected
     accounts = get_accounts()
-    mode = "PAPER" if IB_PAPER_TRADING else "LIVE"
+    mode = "PAPER" if IBCP_PAPER_TRADING else "LIVE"
 
     output = {
         "status": "CONNECTED",

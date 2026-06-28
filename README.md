@@ -112,24 +112,26 @@ ln -s /path/to/ibkr-kimi-plugin/bin/ibkr ~/.local/bin/ibkr
 Set these environment variables in your shell profile or before launching Kimi / Claude:
 
 ```bash
-export IB_GATEWAY_HOST=localhost        # IB Gateway hostname
-export IB_GATEWAY_PORT=4004             # Client Portal API port
-export IB_PAPER_TRADING=true            # true = paper trading only; set to false for live
+export IBCP_GATEWAY_HOST=localhost      # Client Portal API Gateway hostname
+export IBCP_GATEWAY_PORT=5000           # Client Portal API Gateway port
+export IBCP_PAPER_TRADING=paper         # paper = paper trading only; set to live for live
 export FINNHUB_API_KEY=                 # Optional: news / earnings / sentiment enrichment
 ```
 
-### IB Gateway Settings
+> **macOS users:** Port 5000 is used by macOS AirPlay Receiver. If you get "address already in use", set `IBCP_GATEWAY_PORT=5001` and use that port when starting the gateway.
 
-1. Open IB Gateway → Edit → Settings → API
-2. Enable the Client Portal API on the port matching `IB_GATEWAY_PORT` (default `4004`)
-3. Check "Allow connections from localhost only"
+### Client Portal API Gateway Settings
+
+1. Start the Client Portal API Gateway (see Installation below).
+2. Open `https://localhost:<IBCP_GATEWAY_PORT>` in your browser and log in with your IBKR credentials.
+3. Complete 2FA when prompted.
 
 ### Port Reference
 
 | Platform | Default Port | Use Case |
 |----------|-------------|----------|
-| Client Portal (this plugin) | 4004 | **Primary endpoint used by `ibkr`** |
-| IB Gateway Socket API | 4001 | Alternative socket API (not used here) |
+| Client Portal API Gateway (this plugin) | 5000 | **Primary endpoint used by `ibkr`** |
+| IB Gateway Socket API | 4001 / 4004 | Alternative socket API (not used here) |
 | TWS Live | 7496 | TWS GUI |
 | TWS Paper | 7497 | TWS GUI |
 
@@ -154,7 +156,7 @@ Expected output:
   "status": "CONNECTED",
   "connected": true,
   "mode": "PAPER",
-  "endpoint": "https://localhost:4004/v1/api",
+  "endpoint": "https://localhost:5000/v1/api",
   "accounts": ["DU1234567"],
   "account_count": 1
 }
@@ -248,7 +250,7 @@ Kimi / Claude
   -> reads skill from skills/ibkr-trading/SKILL.md
   -> invokes ibkr <command> [args...]
   -> bin/ibkr selects the matching Python script in ibkr-tools/scripts/
-  -> script calls https://localhost:4004/v1/api via ibkr_core.py
+  -> script calls https://localhost:5000/v1/api via ibkr_core.py
   -> IB Gateway relays to IBKR backend
   -> script returns structured JSON to the agent
 ```
@@ -263,7 +265,7 @@ Key implementation points:
 
 ## Safety Features
 
-1. **Paper Trading Default** — `IB_PAPER_TRADING=true` is required unless explicitly set to `false` for live orders.
+1. **Paper Trading Default** — `IBCP_PAPER_TRADING=paper` is required unless explicitly set to `live` for live orders.
 2. **Preview Before Submit** — orders are previewed via the `whatif` endpoint to show margin impact before submission.
 3. **No Credentials Stored** — uses your existing IB Gateway session; no IBKR passwords or API keys in code.
 4. **Localhost Only** — designed for a local IB Gateway; credentials are never exposed externally.
@@ -276,26 +278,26 @@ Test the IB Gateway API directly without the launcher:
 
 ```bash
 # Check session
-curl -k https://localhost:4004/v1/api/sso/validate
+curl -k https://localhost:5000/v1/api/sso/validate
 
 # Search AAPL
-curl -k 'https://localhost:4004/v1/api/iserver/secdef/search?symbol=AAPL&secType=STK'
+curl -k 'https://localhost:5000/v1/api/iserver/secdef/search?symbol=AAPL&secType=STK'
 
 # Get quote (replace 76792991 with actual conid from search)
-curl -k 'https://localhost:4004/v1/api/iserver/marketdata/snapshot?conids=76792991&fields=31,83,84'
+curl -k 'https://localhost:5000/v1/api/iserver/marketdata/snapshot?conids=76792991&fields=31,83,84'
 
 # Get positions
-curl -k https://localhost:4004/v1/api/portfolio/positions
+curl -k https://localhost:5000/v1/api/portfolio/positions
 
 # Get account summary
-curl -k https://localhost:4004/v1/api/iserver/account/summary
+curl -k https://localhost:5000/v1/api/iserver/account/summary
 ```
 
 ## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| "Connection failed" | Start IB Gateway, enable the Client Portal API, and check `IB_GATEWAY_HOST` / `IB_GATEWAY_PORT` |
+| "Connection failed" | Start the Client Portal API Gateway and check `IBCP_GATEWAY_HOST` / `IBCP_GATEWAY_PORT` |
 | "HTTP 401" / "HTTP 403" | IB Gateway session expired — re-authenticate in the Gateway UI |
 | No market data | Subscribe to market data in IB Account Management |
 | Empty positions | Normal if you hold no positions |

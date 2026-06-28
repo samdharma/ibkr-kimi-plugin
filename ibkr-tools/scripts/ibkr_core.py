@@ -8,8 +8,8 @@ Prerequisites:
     - Market data subscriptions active on your IBKR account
     - Python 3.8+
 
-IB Gateway API endpoint: https://localhost:4004/v1/api
-Default ports: TWS Paper=7497, TWS Live=7496, Gateway=4001-4004
+Client Portal API Gateway endpoint: https://localhost:5000/v1/api
+Default ports: Client Portal API Gateway=5000, TWS Paper=7497, TWS Live=7496, IB Gateway Socket=4001/4002
 """
 
 import json
@@ -24,11 +24,11 @@ from typing import Any, Optional
 # Configuration
 # ---------------------------------------------------------------------------
 
-IB_GATEWAY_HOST = os.getenv("IB_GATEWAY_HOST", "localhost")
-IB_GATEWAY_PORT = int(os.getenv("IB_GATEWAY_PORT", "4004"))
-IB_PAPER_TRADING = os.getenv("IB_PAPER_TRADING", "true").lower() == "true"
+IBCP_GATEWAY_HOST = os.getenv("IBCP_GATEWAY_HOST", "localhost")
+IBCP_GATEWAY_PORT = int(os.getenv("IBCP_GATEWAY_PORT", "5000"))
+IBCP_PAPER_TRADING = os.getenv("IBCP_PAPER_TRADING", "paper").lower() in ("paper", "true", "yes", "1")
 
-BASE_URL = f"https://{IB_GATEWAY_HOST}:{IB_GATEWAY_PORT}/v1/api"
+BASE_URL = f"https://{IBCP_GATEWAY_HOST}:{IBCP_GATEWAY_PORT}/v1/api"
 
 # ---------------------------------------------------------------------------
 # SSL Context — IB Gateway uses self-signed cert on localhost

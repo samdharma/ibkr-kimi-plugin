@@ -28,8 +28,8 @@ bin/ibkr briefing --universe nasdaq100 --gap-min 3
 ## Pre-flight
 
 - Always run `bin/ibkr status` first to confirm the IB Gateway is running and authenticated.
-- Default gateway endpoint is `https://localhost:4004/v1/api` (override with `IB_GATEWAY_HOST` and `IB_GATEWAY_PORT`).
-- Paper trading is the default (`IB_PAPER_TRADING=true`). Live trading requires explicitly setting `IB_PAPER_TRADING=false`.
+- Default gateway endpoint is `https://localhost:5000/v1/api` (override with `IBCP_GATEWAY_HOST` and `IBCP_GATEWAY_PORT`).
+- Paper trading is the default (`IBCP_PAPER_TRADING=paper`). Live trading requires explicitly setting `IBCP_PAPER_TRADING=live`.
 
 ## Risk rules
 
